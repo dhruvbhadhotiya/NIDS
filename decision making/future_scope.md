@@ -38,6 +38,33 @@ graph TD
     G -->|Both=Attack| K["Conflict Resolution"]
 ```
 
+### 2.1 Architectural Flow
+
+```mermaid
+graph TD
+    A["NetFlow Records"] --> B["Feature Extraction"]
+    B --> C["Stage 1<br/>Binary Gate<br/>XGBoost"]
+
+    C --> D{"Benign or Attack?"}
+
+    D -->|Benign| E["Benign Traffic"]
+    D -->|Attack| F["Stage 2<br/>Specialist Router<br/>XGBoost"]
+
+    F -.-> G["Excluded<br/>(NetFlow-undetectable)<br/>SlowHTTPTest, XSS, SQLi"]
+
+    F --> H{"Select Specialist?"}
+
+    H -->|Topology| I["Topology Specialist<br/>E-GraphSAGE"]
+    H -->|Flat Features| J["Flat Feature Specialist<br/>XGBoost + SMOTE"]
+    H -->|Anomaly| K["Anomaly Specialist<br/>Isolation Forest"]
+
+    I --> L["Predict Classes<br/>UNSW: Fuzzers, Recon<br/>CICIDS: HOIC, LOIC-HTTP,<br/>LOIC-UDP, Hulk,<br/>GoldenEye, SSH,<br/>FTP, Web, Bot"]
+
+    J --> M["Predict Classes<br/>UNSW: Generic, Exploits,<br/>DoS, Shellcode, Analysis<br/>CICIDS: Slowloris,<br/>Infiltration"]
+
+    K --> N["Predict Classes<br/>UNSW: Backdoor,<br/>Worms"]
+```
+
 ### 2.2 Legacy vs. Proposed Pipeline
 
 **Legacy (3-Stage Routing Pipeline):**
